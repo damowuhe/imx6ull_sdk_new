@@ -1,0 +1,45 @@
+#!/bin/sh
+case "$1" in
+  start)
+    echo "Starting ADB..."
+    mkdir -p /sys/kernel/config
+    mount -t configfs none /sys/kernel/config 2>/dev/null
+
+    modprobe libcomposite 2>/dev/null
+    modprobe usb_f_fs 2>/dev/null
+
+    G=/sys/kernel/config/usb_gadget/g1
+    if [ ! -d "$G" ]; then
+        mkdir -p "$G"
+        echo "0x18d1" > "$G/idVendor"
+        echo "0x4e26" > "$G/idProduct"
+        echo "0x0100" > "$G/bcdDevice"
+        echo "0x0200" > "$G/bcdUSB"
+        mkdir -p "$G/strings/0x409"
+        echo "0123456789" > "$G/strings/0x409/serialnumber"
+        echo "NXP" > "$G/strings/0x409/manufacturer"
+        echo "i.MX6ULL" > "$G/strings/0x409/product"
+        mkdir -p "$G/configs/b.1/strings/0x409"
+        echo "ADB" > "$G/configs/b.1/strings/0x409/configuration"
+        mkdir -p "$G/functions/ffs.adb"
+        ln -sf "$G/functions/ffs.adb" "$G/configs/b.1/" 2>/dev/null
+    fi
+
+    mkdir -p /dev/usb-ffs/adb
+    mount -t functionfs adb /dev/usb-ffs/adb 2>/dev/null
+    /usr/bin/adbd &
+    sleep 1
+
+    UDC=$(ls /sys/class/udc/ | head -1)
+    [ -n "$UDC" ] && echo "$UDC" > "$G/UDC"
+    echo "ADB ready"
+    ;;
+  stop)
+    killall adbd 2>/dev/null
+    umount /dev/usb-ffs/adb 2>/dev/null
+    echo "" > /sys/kernel/config/usb_gadget/g1/UDC 2>/dev/null
+    ;;
+  restart)
+    "$0" stop; sleep 1; "$0" start
+    ;;
+esac

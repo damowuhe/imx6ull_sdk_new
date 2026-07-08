@@ -1,0 +1,5 @@
+# From https://github.com/plougher/squashfs-tools/releases/tag/4.7.5
+sha256  547b7b7f4d2e44bf91b6fc554664850c69563701deab9fd9cd7e21f694c88ea6  squashfs-tools-4.7.5.tar.gz
+
+# License files
+sha256  8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643  COPYING
