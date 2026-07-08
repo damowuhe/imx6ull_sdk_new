@@ -2,3 +2,4 @@ output/
 dl/
 *.zip
 *.Zone.Identifier
+imx-target/
